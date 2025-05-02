@@ -1,656 +1,753 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Cricket Quiz App</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-        <style>
-            :root {
-                --primary: #1e88e5;
-                --primary-dark: #1565c0;
-                --secondary: #28a745;
-                --secondary-dark: #218838;
-                --danger: #dc3545;
-                --light: #f8f9fa;
-                --dark: #343a40;
-                --correct: #4caf50;
-                --wrong: #f44336;
-            }
-            
-            * {
-                box-sizing: border-box;
-                transition: all 0.3s ease;
-            }
-            
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                margin: 0;
-                padding: 0;
-                min-height: 100vh;
-                background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            
-            .container {
-                max-width: 650px;
-                width: 90%;
-                margin: 20px auto;
-                padding: 30px;
-                background: white;
-                border-radius: 16px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-                position: relative;
-                overflow: hidden;
-            }
-            
-            .container::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 8px;
-                background: linear-gradient(90deg, var(--primary), var(--secondary));
-            }
-            
-            h2 {
-                color: var(--dark);
-                text-align: center;
-                margin-bottom: 25px;
-                position: relative;
-                padding-bottom: 10px;
-            }
-            
-            h2::after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 60px;
-                height: 3px;
-                background: var(--primary);
-            }
-            
-            .section {
-                margin-bottom: 30px;
-                position: relative;
-            }
-            
-            button {
-                padding: 12px 20px;
-                margin: 8px;
-                background: var(--secondary);
-                color: white;
-                border: none;
-                border-radius: 50px;
-                cursor: pointer;
-                font-weight: 600;
-                letter-spacing: 0.5px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                position: relative;
-                overflow: hidden;
-                z-index: 1;
-            }
-            
-            button::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: rgba(255,255,255,0.2);
-                transition: all 0.5s ease;
-                z-index: -1;
-            }
-            
-            button:hover::before {
-                left: 0;
-            }
-            
-            button:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            }
-            
-            button:active {
-                transform: translateY(1px);
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            
-            input, select {
-                padding: 12px;
-                margin: 8px 0;
-                width: 90%;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                font-size: 1em;
-                background: var(--light);
-            }
-            
-            input:focus, select:focus {
-                outline: none;
-                border-color: var(--primary);
-                box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.2);
-            }
-            
-            .hidden {
-                display: none;
-            }
-            
-            #result {
-                font-weight: bold;
-                font-size: 1.2em;
-                text-align: center;
-                margin: 15px 0;
-                padding: 10px;
-                border-radius: 8px;
-            }
-            
-            .role-btn {
-                background: var(--primary);
-                width: 45%;
-                margin: 10px;
-                transform: scale(1);
-            }
-            
-            .role-btn:hover {
-                background: var(--primary-dark);
-                transform: scale(1.05);
-            }
-            
-            .role-selection {
-                display: flex;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-            
-            .question-checkbox {
-                display: flex;
-                align-items: center;
-                padding: 15px;
-                margin: 10px 0;
-                background: #f9f9f9;
-                border: 1px solid #ddd;
-                border-radius: 10px;
-                transition: all 0.3s ease;
-            }
-            
-            .question-checkbox:hover {
-                background: #e3f2fd;
-                transform: translateX(5px);
-                border-color: var(--primary);
-            }
-            
-            .question-checkbox input {
-                margin-right: 15px;
-                width: auto;
-                height: 18px;
-                width: 18px;
-            }
-            
-            .question-checkbox label {
-                flex: 1;
-                font-size: 1em;
-                color: #333;
-            }
-            
-            #questionList {
-                max-height: 350px;
-                overflow-y: auto;
-                padding: 15px;
-                border: 1px solid #dde;
-                border-radius: 10px;
-                background: white;
-                scrollbar-width: thin;
-                scrollbar-color: var(--primary) #f5f5f5;
-            }
-            
-            #questionList::-webkit-scrollbar {
-                width: 8px;
-            }
-            
-            #questionList::-webkit-scrollbar-track {
-                background: #f5f5f5;
-                border-radius: 10px;
-            }
-            
-            #questionList::-webkit-scrollbar-thumb {
-                background-color: var(--primary);
-                border-radius: 10px;
-            }
-            
-            .question-container {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 10px;
-                margin-bottom: 20px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                font-size: 1.2em;
-                font-weight: 500;
-            }
-            
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Set character encoding for the document -->
+    <meta charset="UTF-8">
+    <!-- Ensure responsive design for various devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Set the title of the webpage -->
+    <title>Cricket Quiz App</title>
+    <!-- Include Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <!-- Internal CSS styles -->
+    <style>
+        /* Define CSS custom properties (variables) for consistent theming */
+        :root {
+            --primary: #1e88e5;
+            --primary-dark: #1565c0;
+            --secondary: #28a745;
+            --secondary-dark: #218838;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --correct: #4caf50;
+            --wrong: #f44336;
+        }
+        
+        /* Apply box-sizing and smooth transitions globally */
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        /* Style the body with a gradient background and centered content */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Style the main container with shadow and rounded corners */
+        .container {
+            max-width: 650px;
+            width: 90%;
+            margin: 20px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Add a decorative top border to the container */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        /* Style headings with centered text and underline */
+        h2 {
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        /* Add an underline effect to h2 elements */
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--primary);
+        }
+        
+        /* Style sections with margin and relative positioning */
+        .section {
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        /* Style buttons with rounded corners and shadow */
+        button {
+            padding: 12px 20px;
+            margin: 8px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        /* Add a hover effect overlay for buttons */
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+        
+        /* Animate the button overlay on hover */
+        button:hover::before {
+            left: 0;
+        }
+        
+        /* Add hover effects for buttons */
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Add active state for buttons */
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Style input and select elements */
+        input, select {
+            padding: 12px;
+            margin: 8px 0;
+            width: 90%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background: var(--light);
+        }
+        
+        /* Style input and select focus states */
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.2);
+        }
+        
+        /* Hide elements with the 'hidden' class */
+        .hidden {
+            display: none;
+        }
+        
+        /* Style the result display */
+        #result {
+            font-weight: bold;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        /* Style role selection buttons */
+        .role-btn {
+            background: var(--primary);
+            width: 45%;
+            margin: 10px;
+            transform: scale(1);
+        }
+        
+        /* Add hover effects for role buttons */
+        .role-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        /* Style the role selection container */
+        .role-selection {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        /* Style question checkboxes */
+        .question-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Add hover effects for question checkboxes */
+        .question-checkbox:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+            border-color: var(--primary);
+        }
+        
+        /* Style checkbox inputs */
+        .question-checkbox input {
+            margin-right: 15px;
+            width: auto;
+            height: 18px;
+            width: 18px;
+        }
+        
+        /* Style checkbox labels */
+        .question-checkbox label {
+            flex: 1;
+            font-size: 1em;
+            color: #333;
+        }
+        
+        /* Style the question list container */
+        #questionList {
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 15px;
+            border: 1px solid #dde;
+            border-radius: 10px;
+            background: white;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) #f5f5f5;
+        }
+        
+        /* Style the scrollbar for WebKit browsers */
+        #questionList::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        /* Style the scrollbar track */
+        #questionList::-webkit-scrollbar-track {
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        
+        /* Style the scrollbar thumb */
+        #questionList::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 10px;
+        }
+        
+        /* Style the question container */
+        .question-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+        
+        /* Style the options container as a grid */
+        .options-container {
+            display: grid;
+            grid.Template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        /* Responsive design for smaller screens */
+        @media (max-width: 600px) {
             .options-container {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-                margin-top: 10px;
+                grid-template-columns: 1fr;
             }
-            
-            @media (max-width: 600px) {
-                .options-container {
-                    grid-template-columns: 1fr;
-                }
-            }
-            
-            .option-btn {
-                background: white;
-                color: var(--dark);
-                border: 2px solid #ddd;
-                padding: 12px;
-                text-align: left;
-                margin: 5px 0;
-                border-radius: 8px;
-                font-weight: 500;
-            }
-            
-            .option-btn:hover {
-                border-color: var(--primary);
-                background: #f0f8ff;
-            }
-            
-            .quiz-progress {
-                height: 6px;
-                background: #ddd;
-                border-radius: 3px;
-                margin-bottom: 20px;
-                overflow: hidden;
-            }
-            
-            .progress-bar {
-                height: 100%;
-                background: linear-gradient(90deg, var(--primary), var(--secondary));
-                width: 0%;
-                transition: width 0.5s ease;
-            }
-            
-            .cricket-icon {
-                text-align: center;
-                margin-bottom: 20px;
-                font-size: 40px;
-            }
-            
-            .score-card {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 10px;
-                text-align: center;
-                margin-top: 20px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                animation: scaleIn 0.5s ease;
-            }
-            
-            .score-value {
-                font-size: 3em;
-                color: var(--primary);
-                margin: 15px 0;
-                font-weight: bold;
-            }
-            
-            .score-text {
-                font-size: 1.2em;
-                color: var(--dark);
-            }
-            
-            .correct-answer {
-                background: var(--correct) !important;
-                color: white !important;
-                border-color: var(--correct) !important;
-            }
-            
-            .wrong-answer {
-                background: var(--wrong) !important;
-                color: white !important;
-                border-color: var(--wrong) !important;
-            }
-            
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-            
-            @keyframes slideInRight {
-                from { transform: translateX(50px); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            
-            @keyframes slideInLeft {
-                from { transform: translateX(-50px); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            
-            @keyframes scaleIn {
-                from { transform: scale(0.8); opacity: 0; }
-                to { transform: scale(1); opacity: 1; }
-            }
-            
-            .fade-in {
-                animation: fadeIn 0.5s ease;
-            }
-            
-            .slide-in-right {
-                animation: slideInRight 0.5s ease;
-            }
-            
-            .slide-in-left {
-                animation: slideInLeft 0.5s ease;
-            }
-            
-            .scale-in {
-                animation: scaleIn 0.5s ease;
-            }
-            
-            .cricket-ball {
-                display: inline-block;
-                height: 60px;
-                width: 60px;
-                background: linear-gradient(145deg, #e83b3b, #c50e0e);
-                border-radius: 50%;
-                position: relative;
-                box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-            }
-            
-            .cricket-ball::before {
-                content: '';
-                position: absolute;
-                height: 100%;
-                width: 100%;
-                background: linear-gradient(to right, transparent 48%, white 48%, white 52%, transparent 52%);
-                border-radius: 50%;
-                transform: rotate(15deg);
-            }
-            
-            .cricket-ball::after {
-                content: '';
-                position: absolute;
-                height: 100%;
-                width: 100%;
-                background: linear-gradient(to right, transparent 48%, white 48%, white 52%, transparent 52%);
-                border-radius: 50%;
-                transform: rotate(105deg);
-            }
-            
-            .cricket-bat {
-                height: 80px;
-                width: 25px;
-                background: linear-gradient(90deg, #d2a679, #b38553);
-                position: relative;
-                border-radius: 5px 5px 2px 2px;
-                margin: 0 auto;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            }
-            
-            .cricket-bat::before {
-                content: '';
-                position: absolute;
-                bottom: -15px;
-                left: 0;
-                height: 15px;
-                width: 100%;
-                background: linear-gradient(90deg, #7a4e24, #5e3919);
-                border-radius: 2px;
-            }
-            
-            .cricket-elements {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                position: relative;
-                height: 100px;
-                margin-bottom: 20px;
-            }
-            
-            .cricket-stumps {
-                display: flex;
-                justify-content: space-between;
-                width: 40px;
-                height: 70px;
-                margin: 0 auto;
-                position: relative;
-            }
-            
-            .stump {
-                width: 8px;
-                height: 100%;
-                background: #f5f5f5;
-                border-radius: 4px;
-                position: relative;
-            }
-            
-            .bail {
-                width: 40px;
-                height: 5px;
-                background: #f5f5f5;
-                position: absolute;
-                top: 0;
-                left: 0;
-                border-radius: 2px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container animate__animated animate__fadeIn">
-            <!-- Cricket Elements -->
-            <div class="cricket-elements">
-                <div class="cricket-ball animate__animated animate__rotateIn"></div>
-            </div>
-            
-            <!-- Role Selection Section -->
-            <div id="roleSection" class="section">
-                <h2 class="animate__animated animate__bounceIn">Welcome to Cricket Quiz</h2>
-                <div class="role-selection">
-                    <button class="role-btn animate__animated animate__fadeInLeft" onclick="selectRole('admin')">Admin Mode</button>
-                    <button class="role-btn animate__animated animate__fadeInRight" onclick="selectRole('user')">Player Mode</button>
-                </div>
-            </div>
-            
-            <!-- Admin Section (Hidden by Default) -->
-            <div id="adminSection" class="section hidden">
-                <h2 class="animate__animated animate__slideInDown">Admin: Select Cricket Questions</h2>
-                <div id="questionList" class="animate__animated animate__fadeIn"></div>
-                <button onclick="assignQuiz()" class="animate__animated animate__pulse animate__infinite">Assign Quiz to Player</button>
-            </div>
-            
-            <!-- User Section (Hidden by Default) -->
-            <div id="userSection" class="section hidden">
-                <h2 class="animate__animated animate__slideInDown">Player: Take Cricket Quiz</h2>
-                <div class="quiz-progress">
-                    <div class="progress-bar" id="progressBar"></div>
-                </div>
-                <div class="question-container animate__animated animate__fadeIn" id="question"></div>
-                <div class="options-container" id="options"></div>
-                <div id="result"></div>
-                <button onclick="startQuiz()" id="startBtn" class="animate__animated animate__pulse animate__infinite">Start Quiz</button>
+        }
+        
+        /* Style option buttons */
+        .option-btn {
+            background: white;
+            color: var(--dark);
+            border: 2px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        /* Add hover effects for option buttons */
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: #f0f8ff;
+        }
+        
+        /* Style the quiz progress bar container */
+        .quiz-progress {
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        /* Style the progress bar */
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        /* Style the cricket icon container */
+        .cricket-icon {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 40px;
+        }
+        
+        /* Style the score card */
+        .score-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            animation: scaleIn 0.5s ease;
+        }
+        
+        /* Style the score value display */
+        .score-value {
+            font-size: 3em;
+            color: var(--primary);
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        /* Style the score text */
+        .score-text {
+            font-size: 1.2em;
+            color: var(--dark);
+        }
+        
+        /* Style for correct answer buttons */
+        .correct-answer {
+            background: var(--correct) !important;
+            color: white !important;
+            border-color: var(--correct) !important;
+        }
+        
+        /* Style for wrong answer buttons */
+        .wrong-answer {
+            background: var(--wrong) !important;
+            color: white !important;
+            border-color: var(--wrong) !important;
+        }
+        
+        /* Animation for fading in elements */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Animation for sliding in from the right */
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Animation for sliding in from the left */
+        @keyframes slideInLeft {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Animation for scaling in elements */
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Class to apply fade-in animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        /* Class to apply slide-in-right animation */
+        .slide-in-right {
+            animation: slideInRight 0.5s ease;
+        }
+        
+        /* Class to apply slide-in-left animation */
+        .slide-in-left {
+            animation: slideInLeft 0.5s ease;
+        }
+        
+        /* Class to apply scale-in animation */
+        .scale-in {
+            animation: scaleIn 0.5s ease;
+        }
+        
+        /* Style the cricket ball graphic */
+        .cricket-ball {
+            display: inline-block;
+            height: 60px;
+            width: 60px;
+            background: linear-gradient(145deg, #e83b3b, #c50e0e);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        /* Add seam effect to cricket ball */
+        .cricket-ball::before {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to right, transparent 48%, white 48%, white 52%, transparent 52%);
+            border-radius: 50%;
+            transform: rotate(15deg);
+        }
+        
+        /* Add second seam effect to cricket ball */
+        .cricket-ball::after {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to right, transparent 48%, white 48%, white 52%, transparent 52%);
+            border-radius: 50%;
+            transform: rotate(105deg);
+        }
+        
+        /* Style the cricket bat graphic */
+        .cricket-bat {
+            height: 80px;
+            width: 25px;
+            background: linear-gradient(90deg, #d2a679, #b38553);
+            position: relative;
+            border-radius: 5px 5px 2px 2px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Add handle to cricket bat */
+        .cricket-bat::before {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            height: 15px;
+            width: 100%;
+            background: linear-gradient(90deg, #7a4e24, #5e3919);
+            border-radius: 2px;
+        }
+        
+        /* Style the cricket elements container */
+        .cricket-elements {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        
+        /* Style the cricket stumps container */
+        .cricket-stumps {
+            display: flex;
+            justify-content: space-between;
+            width: 40px;
+            height: 70px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        /* Style individual stumps */
+        .stump {
+            width: 8px;
+            height: 100%;
+            background: #f5f5f5;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        /* Style the bails on stumps */
+        .bail {
+            width: 40px;
+            height: 5px;
+            background: #f5f5f5;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main container for the quiz app -->
+    <div class="container animate__animated animate__fadeIn">
+        <!-- Container for cricket-themed graphics -->
+        <div class="cricket-elements">
+            <!-- Cricket ball graphic with animation -->
+            <div class="cricket-ball animate__animated animate__rotateIn"></div>
+        </div>
+        
+        <!-- Section for selecting user role -->
+        <div id="roleSection" class="section">
+            <!-- Welcome heading with animation -->
+            <h2 class="animate__animated animate__bounceIn">Welcome to Cricket Quiz</h2>
+            <!-- Container for role selection buttons -->
+            <div class="role-selection">
+                <!-- Button to select admin mode -->
+                <button class="role-btn animate__animated animate__fadeInLeft" onclick="selectRole('admin')">Admin Mode</button>
+                <!-- Button to select player mode -->
+                <button class="role-btn animate__animated animate__fadeInRight" onclick="selectRole('user')">Player Mode</button>
             </div>
         </div>
+        
+        <!-- Section for admin functionalities, hidden by default -->
+        <div id="adminSection" class="section hidden">
+            <!-- Heading for admin section -->
+            <h2 class="animate__animated animate__slideInDown">Admin: Select Cricket Questions</h2>
+            <!-- Container for question selection list -->
+            <div id="questionList" class="animate__animated animate__fadeIn"></div>
+            <!-- Button to assign selected questions -->
+            <button onclick="assignQuiz()" class="animate__animated animate__pulse animate__infinite">Assign Quiz to Player</button>
+        </div>
+        
+        <!-- Section for user quiz, hidden by default -->
+        <div id="userSection" class="section hidden">
+            <!-- Heading for user section -->
+            <h2 class="animate__animated animate__slideInDown">Player: Take Cricket Quiz</h2>
+            <!-- Progress bar container -->
+            <div class="quiz-progress">
+                <!-- Progress bar element -->
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <!-- Container for displaying the current question -->
+            <div class="question-container animate__animated animate__fadeIn" id="question"></div>
+            <!-- Container for answer options -->
+            <div class="options-container" id="options"></div>
+            <!-- Container for result feedback -->
+            <div id="result"></div>
+            <!-- Button to start the quiz -->
+            <button onclick="startQuiz()" id="startBtn" class="animate__animated animate__pulse animate__infinite">Start Quiz</button>
+        </div>
+    </div>
 
-        <script>
-            // 10 Fixed cricket questions (6th question updated)
-            const allQuestions = [
-                { question: "Who holds the record for the highest individual score in ODI cricket?", options: ["Sachin Tendulkar", "Rohit Sharma", "Chris Gayle", "Martin Guptill"], answer: "Rohit Sharma" },
-                { question: "Which team won the first ICC Cricket World Cup in 1975?", options: ["Australia", "West Indies", "India", "England"], answer: "West Indies" },
-                { question: "How many players are on the field for a cricket team during a match?", options: ["9", "10", "11", "12"], answer: "11" },
-                { question: "What is the term for a delivery bowled at high speed towards the batsman's body?", options: ["Yorker", "Bouncer", "Googly", "Slower"], answer: "Bouncer" },
-                { question: "Which cricketer has the most Test wickets of all time?", options: ["Shane Warne", "Muttiah Muralitharan", "Anil Kumble", "James Anderson"], answer: "Muttiah Muralitharan" },
-                { question: "Who was the first cricketer to score 100 international centuries?", options: ["Ricky Ponting", "Sachin Tendulkar", "Virat Kohli", "Brian Lara"], answer: "Sachin Tendulkar" },
-                { question: "What is the name of the flat, oval-shaped area where the bowler delivers the ball?", options: ["Crease", "Pitch", "Stump", "Boundary"], answer: "Pitch" },
-                { question: "Who scored the fastest century in IPL history?", options: ["Virat Kohli", "Chris Gayle", "AB de Villiers", "Priyansh Arya"], answer: "Chris Gayle" },
-                { question: "Which country hosted the 2023 ICC Men's Cricket World Cup?", options: ["Australia", "England", "India", "South Africa"], answer: "India" },
-                { question: "What is the batting position called for the player facing the first ball?", options: ["Opener", "Middle-order", "Finisher", "Tail-ender"], answer: "Opener" }
-            ];
+    <!-- JavaScript for quiz functionality -->
+    <script>
+        // Array of fixed cricket questions with options and answers
+        const allQuestions = [
+            { question: "Who holds the record for the highest individual score in ODI cricket?", options: ["Sachin Tendulkar", "Rohit Sharma", "Chris Gayle", "Martin Guptill"], answer: "Rohit Sharma" },
+            { question: "Which team won the first ICC Cricket World Cup in 1975?", options: ["Australia", "West Indies", "India", "England"], answer: "West Indies" },
+            { question: "How many players are on the field for a cricket team during a match?", options: ["9", "10", "11", "12"], answer: "11" },
+            { question: "What is the term for a delivery bowled at high speed towards the batsman's body?", options: ["Yorker", "Bouncer", "Googly", "Slower"], answer: "Bouncer" },
+            { question: "Which cricketer has the most Test wickets of all time?", options: ["Shane Warne", "Muttiah Muralitharan", "Anil Kumble", "James Anderson"], answer: "Muttiah Muralitharan" },
+            { question: "Who was the first cricketer to score 100 international centuries?", options: ["Ricky Ponting", "Sachin Tendulkar", "Virat Kohli", "Brian Lara"], answer: "Sachin Tendulkar" },
+            { question: "What is the name of the flat, oval-shaped area where the bowler delivers the ball?", options: ["Crease", "Pitch", "Stump", "Boundary"], answer: "Pitch" },
+            { question: "Who scored the fastest century in IPL history?", options: ["Virat Kohli", "Chris Gayle", "AB de Villiers", "Priyansh Arya"], answer: "Chris Gayle" },
+            { question: "Which country hosted the 2023 ICC Men's Cricket World Cup?", options: ["Australia", "England", "India", "South Africa"], answer: "India" },
+            { question: "What is the batting position called for the player facing the first ball?", options: ["Opener", "Middle-order", "Finisher", "Tail-ender"], answer: "Opener" }
+        ];
 
-            let quizData = []; // Questions assigned for the quiz
-            let currentQuestionIndex = 0;
-            let score = 0;
-            let isAdmin = false;
+        // Initialize variables for quiz state
+        let quizData = []; // Questions assigned for the quiz
+        let currentQuestionIndex = 0; // Current question index
+        let score = 0; // User's score
+        let isAdmin = false; // Flag for admin mode
 
-            // UDF: Select role (admin or user)
-            function selectRole(role) {
-                isAdmin = role === 'admin';
-                document.getElementById('roleSection').classList.add('hidden');
-                if (isAdmin) {
-                    document.getElementById('adminSection').classList.remove('hidden');
-                    loadQuestionList();
-                } else {
-                    document.getElementById('userSection').classList.remove('hidden');
-                    if (quizData.length === 0) {
-                        document.getElementById('question').textContent = 'No quiz assigned yet.';
-                        document.getElementById('startBtn').classList.add('hidden');
-                    }
-                }
-            }
-
-            // UDF: Load question list for admin to select
-            function loadQuestionList() {
-                const questionListDiv = document.getElementById('questionList');
-                questionListDiv.innerHTML = '';
-                allQuestions.forEach((q, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'question-checkbox animate__animated animate__fadeInLeft';
-                    div.style.animationDelay = `${index * 0.1}s`;
-                    div.innerHTML = `
-                        <input type="checkbox" id="q${index}" value="${index}">
-                        <label for="q${index}">${q.question}</label>
-                    `;
-                    questionListDiv.appendChild(div);
-                });
-            }
-
-            // UDF: Assign selected questions to quiz
-            function assignQuiz() {
-                quizData = [];
-                allQuestions.forEach((q, index) => {
-                    if (document.getElementById(`q${index}`).checked) {
-                        quizData.push(q);
-                    }
-                });
+        // Function to select user role (admin or user)
+        function selectRole(role) {
+            isAdmin = role === 'admin';
+            // Hide role selection section
+            document.getElementById('roleSection').classList.add('hidden');
+            if (isAdmin) {
+                // Show admin section and load question list
+                document.getElementById('adminSection').classList.remove('hidden');
+                loadQuestionList();
+            } else {
+                // Show user section
+                document.getElementById('userSection').classList.remove('hidden');
+                // Check if quiz is assigned
                 if (quizData.length === 0) {
-                    alert('Please select at least one question.');
-                    return;
+                    document.getElementById('question').textContent = 'No quiz assigned yet.';
+                    document.getElementById('startBtn').classList.add('hidden');
                 }
-                alert('Quiz assigned successfully!');
-                document.getElementById('adminSection').classList.add('hidden');
-                document.getElementById('roleSection').classList.remove('hidden');
             }
+        }
 
-            // UDF: Start quiz (User)
-            function startQuiz() {
-                if (quizData.length === 0) return;
-                currentQuestionIndex = 0;
-                score = 0;
-                document.getElementById('startBtn').classList.add('hidden');
-                loadQuestion();
-            }
-
-            // UDF: Load current question
-            function loadQuestion() {
-                if (currentQuestionIndex >= quizData.length) {
-                    endQuiz();
-                    return;
-                }
-                
-                // Update progress bar
-                const progressPercentage = (currentQuestionIndex / quizData.length) * 100;
-                document.getElementById('progressBar').style.width = `${progressPercentage}%`;
-                
-                const currentQuestion = quizData[currentQuestionIndex];
-                document.getElementById('question').textContent = `Q${currentQuestionIndex + 1}: ${currentQuestion.question}`;
-                document.getElementById('question').className = 'question-container animate__animated animate__fadeIn';
-                
-                const optionsDiv = document.getElementById('options');
-                optionsDiv.innerHTML = '';
-                currentQuestion.options.forEach((option, index) => {
-                    const button = document.createElement('button');
-                    button.className = `option-btn animate__animated animate__fadeIn`;
-                    button.style.animationDelay = `${index * 0.15}s`;
-                    button.textContent = option;
-                    button.onclick = () => checkAnswer(option);
-                    optionsDiv.appendChild(button);
-                });
-                
-                document.getElementById('result').textContent = '';
-                document.getElementById('result').className = '';
-            }
-
-            // UDF: Check user's answer
-            function checkAnswer(selected) {
-                const currentQuestion = quizData[currentQuestionIndex];
-                const buttons = document.querySelectorAll('.option-btn');
-                
-                // Disable all buttons
-                buttons.forEach(btn => {
-                    btn.disabled = true;
-                    
-                    // Mark correct and wrong answers
-                    if (btn.textContent === currentQuestion.answer) {
-                        btn.classList.add('correct-answer');
-                    } else if (btn.textContent === selected && selected !== currentQuestion.answer) {
-                        btn.classList.add('wrong-answer'); 
-                    }
-                });
-                
-                if (selected === currentQuestion.answer) {
-                    score++;
-                    document.getElementById('result').textContent = 'Correct! Well done!';
-                    document.getElementById('result').className = 'animate__animated animate__bounceIn';
-                    document.getElementById('result').style.color = 'var(--correct)';
-                } else {
-                    document.getElementById('result').textContent = `Wrong! Correct answer: ${currentQuestion.answer}`;
-                    document.getElementById('result').className = 'animate__animated animate__shakeX';
-                    document.getElementById('result').style.color = 'var(--wrong)';
-                }
-                
-                setTimeout(() => {
-                    currentQuestionIndex++;
-                    loadQuestion();
-                }, 1500);
-            }
-
-            // UDF: End quiz and show score
-            function endQuiz() {
-                document.getElementById('progressBar').style.width = '100%';
-                document.getElementById('question').className = 'hidden';
-                document.getElementById('options').innerHTML = '';
-                
-                const resultDiv = document.getElementById('result');
-                resultDiv.innerHTML = `
-                    <div class="score-card">
-                        <h3 class="animate__animated animate__bounceIn">Quiz Completed!</h3>
-                        <div class="score-value animate__animated animate__zoomIn">${score}/${quizData.length}</div>
-                        <p class="score-text animate__animated animate__fadeIn">
-                            ${getScoreMessage(score, quizData.length)}
-                        </p>
-                    </div>
+        // Function to load question list for admin selection
+        function loadQuestionList() {
+            const questionListDiv = document.getElementById('questionList');
+            questionListDiv.innerHTML = '';
+            // Iterate through all questions
+            allQuestions.forEach((q, index) => {
+                const div = document.createElement('div');
+                div.className = 'question-checkbox animate__animated animate__fadeInLeft';
+                div.style.animationDelay = `${index * 0.1}s`;
+                div.innerHTML = `
+                    <input type="checkbox" id="q${index}" value="${index}">
+                    <label for="q${index}">${q.question}</label>
                 `;
-                
-                document.getElementById('startBtn').textContent = 'Restart Quiz';
-                document.getElementById('startBtn').classList.remove('hidden');
-                document.getElementById('startBtn').className = 'animate__animated animate__bounceIn';
+                questionListDiv.appendChild(div);
+            });
+        }
+
+        // Function to assign selected questions to the quiz
+        function assignQuiz() {
+            quizData = [];
+            // Collect checked questions
+            allQuestions.forEach((q, index) => {
+                if (document.getElementById(`q${index}`).checked) {
+                    quizData.push(q);
+                }
+            });
+            // Validate selection
+            if (quizData.length === 0) {
+                alert('Please select at least one question.');
+                return;
+            }
+            alert('Quiz assigned successfully!');
+            // Return to role selection
+            document.getElementById('adminSection').classList.add('hidden');
+            document.getElementById('roleSection').classList.remove('hidden');
+        }
+
+        // Function to start the quiz for the user
+        function startQuiz() {
+            if (quizData.length === 0) return;
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('startBtn').classList.add('hidden');
+            loadQuestion();
+        }
+
+        // Function to load the current question
+        function loadQuestion() {
+            // Check if quiz is complete
+            if (currentQuestionIndex >= quizData.length) {
+                endQuiz();
+                return;
             }
             
-            // Helper function: Get score message based on performance
-            function getScoreMessage(score, total) {
-                const percentage = (score / total) * 100;
-                if (percentage === 100) return "Perfect! You're a cricket master!";
-                if (percentage >= 80) return "Excellent! You know cricket very well!";
-                if (percentage >= 60) return "Good job! You have solid cricket knowledge.";
-                if (percentage >= 40) return "Not bad! Keep learning about cricket.";
-                return "Keep practicing! You'll improve your cricket knowledge.";
+            // Update progress bar
+            const progressPercentage = (currentQuestionIndex / quizData.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercentage}%`;
+            
+            // Display current question
+            const currentQuestion = quizData[currentQuestionIndex];
+            document.getElementById('question').textContent = `Q${currentQuestionIndex + 1}: ${currentQuestion.question}`;
+            document.getElementById('question').className = 'question-container animate__animated animate__fadeIn';
+            
+            // Populate options
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = `option-btn animate__animated animate__fadeIn`;
+                button.style.animationDelay = `${index * 0.15}s`;
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option);
+                optionsDiv.appendChild(button);
+            });
+            
+            // Clear previous result
+            document.getElementById('result').textContent = '';
+            document.getElementById('result').className = '';
+        }
+
+        // Function to check the user's answer
+        function checkAnswer(selected) {
+            const currentQuestion = quizData[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            // Disable all option buttons
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                
+                // Highlight correct and wrong answers
+                if (btn.textContent === currentQuestion.answer) {
+                    btn.classList.add('correct-answer');
+                } else if (btn.textContent === selected && selected !== currentQuestion.answer) {
+                    btn.classList.add('wrong-answer'); 
+                }
+            });
+            
+            // Update score and display result
+            if (selected === currentQuestion.answer) {
+                score++;
+                document.getElementById('result').textContent = 'Correct! Well done!';
+                document.getElementById('result').className = 'animate__animated animate__bounceIn';
+                document.getElementById('result').style.color = 'var(--correct)';
+            } else {
+                document.getElementById('result').textContent = `Wrong! Correct answer: ${currentQuestion.answer}`;
+                document.getElementById('result').className = 'animate__animated animate__shakeX';
+                document.getElementById('result').style.color = 'var(--wrong)';
             }
-        </script>
-    </body>
-    </html>
+            
+            // Move to next question after delay
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 1500);
+        }
+
+        // Function to end the quiz and display the final score
+        function endQuiz() {
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('question').className = 'hidden';
+            document.getElementById('options').innerHTML = '';
+            
+            // Display score card
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div class="score-card">
+                    <h3 class="animate__animated animate__bounceIn">Quiz Completed!</h3>
+                    <div class="score-value animate__animated animate__zoomIn">${score}/${quizData.length}</div>
+                    <p class="score-text animate__animated animate__fadeIn">
+                        ${getScoreMessage(score, quizData.length)}
+                    </p>
+                </div>
+            `;
+            
+            // Show restart button
+            document.getElementById('startBtn').textContent = 'Restart Quiz';
+            document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('startBtn').className = 'animate__animated animate__bounceIn';
+        }
+        
+        // Helper function to generate score message based on performance
+        function getScoreMessage(score, total) {
+            const percentage = (score / total) * 100;
+            if (percentage === 100) return "Perfect! You're a cricket master!";
+            if (percentage >= 80) return "Excellent! You know cricket very well!";
+            if (percentage >= 60) return "Good job! You have solid cricket knowledge.";
+            if (percentage >= 40) return "Not bad! Keep learning about cricket.";
+            return "Keep practicing! You'll improve your cricket knowledge.";
+        }
+    </script>
+</body>
+</html>
